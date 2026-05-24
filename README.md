@@ -23,7 +23,7 @@ The system helps manage car parking operations such as entry, exit, pricing, and
 
 - Python (Flask)
 - SQLite (Database)
-- HTML / CSS (Bootstrap)
+- HTML / CSS 
 - Docker
 - Jenkins (CI/CD)
 - GitHub (Version Control)
