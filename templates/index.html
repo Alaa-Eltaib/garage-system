@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Garage</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #080b0f;
+      --surface: #0f1318;
+      --surface2: #161c24;
+      --surface3: #1d2530;
+      --border: #1e2a38;
+      --border2: #263344;
+      --text: #e2eaf4;
+      --muted: #5a7a9a;
+      --muted2: #3d5870;
+      --accent: #3b9eff;
+      --accent-glow: rgba(59,158,255,0.15);
+      --success: #22c55e;
+      --success-glow: rgba(34,197,94,0.12);
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --hourly: #f59e0b;
+      --daily: #22c55e;
+      --monthly: #3b9eff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* TOPBAR */
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 28px; height: 56px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 700; letter-spacing: -0.3px; }
+    .brand-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .brand-icon svg { width: 16px; height: 16px; color: white; }
+    .brand-name { color: var(--text); }
+    .brand-name span { color: var(--accent); }
+    .topbar-actions { display: flex; align-items: center; gap: 8px; }
+    .topbar-time { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); margin-right: 8px; }
+    .tbtn {
+      display: flex; align-items: center; gap: 6px; padding: 6px 14px;
+      font-size: 12px; font-weight: 500; font-family: 'Space Grotesk', sans-serif;
+      border: 1px solid var(--border2); border-radius: 8px;
+      background: var(--surface2); color: var(--muted); text-decoration: none;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .tbtn:hover { color: var(--text); border-color: var(--accent); background: var(--accent-glow); }
+    .tbtn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+    .tbtn.primary:hover { opacity: 0.88; }
+
+    /* LAYOUT */
+    .layout { display: flex; flex: 1; }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 220px; flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 20px 12px;
+      position: sticky; top: 56px; height: calc(100vh - 56px); overflow-y: auto;
+    }
+    .sidebar-section { margin-bottom: 24px; }
+    .sidebar-label {
+      font-size: 10px; font-weight: 600; color: var(--muted2);
+      text-transform: uppercase; letter-spacing: 0.1em;
+      padding: 0 10px; margin-bottom: 6px;
+    }
+    .sitem {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 10px; border-radius: 8px; font-size: 13px; font-weight: 500;
+      color: var(--muted); text-decoration: none; transition: all 0.12s;
+      margin-bottom: 2px; border: 1px solid transparent;
+    }
+    .sitem:hover { background: var(--surface2); color: var(--text); }
+    .sitem.active { background: var(--accent-glow); color: var(--accent); border-color: rgba(59,158,255,0.2); }
+    .sitem-badge {
+      font-size: 11px; font-family: 'JetBrains Mono', monospace;
+      background: var(--surface3); color: var(--muted);
+      padding: 2px 7px; border-radius: 20px; border: 1px solid var(--border2);
+    }
+    .sitem.active .sitem-badge { background: var(--accent-glow); color: var(--accent); border-color: rgba(59,158,255,0.3); }
+    .sdivider { height: 1px; background: var(--border); margin: 4px 10px 10px; }
+
+    /* MAIN */
+    .main { flex: 1; padding: 28px; overflow: hidden; }
+
+    /* METRICS */
+    .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
+    .mcard {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px;
+      position: relative; overflow: hidden;
+    }
+    .mcard::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: var(--accent-color, var(--accent));
+    }
+    .mcard.green { --accent-color: var(--success); }
+    .mcard.yellow { --accent-color: var(--warning); }
+    .mcard.red { --accent-color: var(--danger); }
+    .mlabel { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px; }
+    .mvalue { font-size: 28px; font-weight: 700; font-family: 'JetBrains Mono', monospace; line-height: 1; color: var(--text); }
+    .mvalue.accent { color: var(--accent); }
+    .mvalue.green { color: var(--success); }
+    .mvalue.red { color: var(--danger); }
+    .mvalue.yellow { color: var(--warning); }
+    .msub { font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+    /* FULL ALERT */
+    .full-alert {
+      background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25);
+      border-radius: 10px; padding: 12px 16px; margin-bottom: 20px;
+      font-size: 13px; color: var(--danger); display: flex; align-items: center; gap: 8px;
+    }
+
+    /* TOOLBAR */
+    .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+    .search-wrap { flex: 1; position: relative; }
+    .search-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); width: 15px; height: 15px; }
+    .search-input {
+      width: 100%; background: var(--surface); border: 1px solid var(--border2);
+      color: var(--text); border-radius: 8px; font-size: 13px; font-family: 'Space Grotesk', sans-serif;
+      padding: 9px 12px 9px 36px; transition: border-color 0.15s;
+    }
+    .search-input::placeholder { color: var(--muted2); }
+    .search-input:focus { outline: none; border-color: var(--accent); }
+    .filter-btn {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--accent); color: white; border: none;
+      padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: 'Space Grotesk', sans-serif; transition: opacity 0.15s;
+    }
+    .filter-btn:hover { opacity: 0.88; }
+    .clear-btn {
+      display: flex; align-items: center; gap: 5px;
+      background: var(--surface2); color: var(--muted); border: 1px solid var(--border2);
+      padding: 9px 14px; border-radius: 8px; font-size: 13px;
+      cursor: pointer; font-family: 'Space Grotesk', sans-serif; text-decoration: none; transition: all 0.15s;
+    }
+    .clear-btn:hover { color: var(--text); }
+
+    /* TABLE HEADER */
+    .tbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .tbar-title { font-size: 14px; font-weight: 600; }
+    .tbar-title span { color: var(--muted); font-weight: 400; font-size: 13px; }
+    .add-btn {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--success); color: white; border: none;
+      padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: 'Space Grotesk', sans-serif; text-decoration: none; transition: opacity 0.15s;
+    }
+    .add-btn:hover { opacity: 0.88; color: white; }
+    .add-btn-disabled {
+      background: var(--surface2); color: var(--muted2); border: 1px solid var(--border);
+      padding: 8px 16px; border-radius: 8px; font-size: 13px; cursor: not-allowed;
+    }
+
+    /* TABLE */
+    .table-wrap { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th {
+      background: var(--surface2); padding: 10px 16px;
+      text-align: left; font-size: 11px; font-weight: 600;
+      color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody td { padding: 11px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr { background: var(--surface); transition: background 0.1s; }
+    tbody tr:hover { background: var(--surface2); }
+    .td-id { color: var(--muted2); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+    .td-owner { font-weight: 600; }
+    .td-num { font-family: 'JetBrains Mono', monospace; color: var(--accent); font-size: 12px; letter-spacing: 0.05em; }
+    .td-muted { color: var(--muted); font-size: 12px; font-family: 'JetBrains Mono', monospace; }
+
+    /* BADGES */
+    .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; font-family: 'JetBrains Mono', monospace; }
+    .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+    .badge-parked { background: var(--success-glow); color: var(--success); border: 1px solid rgba(34,197,94,0.25); }
+    .badge-exited { background: var(--surface2); color: var(--muted); border: 1px solid var(--border2); }
+    .badge-hourly { background: rgba(245,158,11,0.1); color: var(--hourly); border: 1px solid rgba(245,158,11,0.25); }
+    .badge-daily { background: rgba(34,197,94,0.1); color: var(--daily); border: 1px solid rgba(34,197,94,0.25); }
+    .badge-monthly { background: var(--accent-glow); color: var(--monthly); border: 1px solid rgba(59,158,255,0.25); }
+
+    /* ACTIONS */
+    .actions { display: flex; gap: 4px; }
+    .act {
+      font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 6px;
+      border: 1px solid var(--border2); background: transparent; color: var(--muted);
+      cursor: pointer; font-family: 'Space Grotesk', sans-serif; text-decoration: none;
+      display: inline-flex; align-items: center; transition: all 0.12s;
+    }
+    .act:hover { color: var(--text); border-color: var(--border); background: var(--surface3); }
+    .act-checkout { color: var(--success); border-color: rgba(34,197,94,0.3); }
+    .act-checkout:hover { background: var(--success-glow); border-color: var(--success); color: var(--success); }
+    .act-delete { color: var(--danger); border-color: rgba(239,68,68,0.3); }
+    .act-delete:hover { background: rgba(239,68,68,0.1); border-color: var(--danger); color: var(--danger); }
+    .act-edit:hover { border-color: var(--accent); color: var(--accent); }
+
+    .empty-row td { text-align: center; color: var(--muted2); padding: 60px; font-size: 13px; }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+    </div>
+    <span class="brand-name">Smart<span>Garage</span></span>
+  </div>
+  <div class="topbar-actions">
+    <span class="topbar-time">{{ now.strftime('%Y-%m-%d %H:%M') }}</span>
+    <a href="/report" class="tbtn">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Report
+    </a>
+    <a href="/export/csv" class="tbtn">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export
+    </a>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Status</div>
+      <a href="/?{% if search %}search={{ search }}&{% endif %}{% if type_filter %}car_type={{ type_filter }}&{% endif %}{% if sub_filter %}subscription={{ sub_filter }}{% endif %}" class="sitem {% if not status_filter %}active{% endif %}">
+        <span>All Cars</span>
+        <span class="sitem-badge">{{ total_cars }}</span>
+      </a>
+      <a href="/?status=Parked{% if search %}&search={{ search }}{% endif %}{% if type_filter %}&car_type={{ type_filter }}{% endif %}{% if sub_filter %}&subscription={{ sub_filter }}{% endif %}" class="sitem {% if status_filter == 'Parked' %}active{% endif %}">
+        <span>🟢 Parked</span>
+        <span class="sitem-badge">{{ parked_cars }}</span>
+      </a>
+      <a href="/?status=Exited{% if search %}&search={{ search }}{% endif %}{% if type_filter %}&car_type={{ type_filter }}{% endif %}{% if sub_filter %}&subscription={{ sub_filter }}{% endif %}" class="sitem {% if status_filter == 'Exited' %}active{% endif %}">
+        <span>⚪ Exited</span>
+      </a>
+    </div>
+
+    <div class="sdivider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Car Type</div>
+      {% for t in car_types %}
+      <a href="/?car_type={{ t }}{% if search %}&search={{ search }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if sub_filter %}&subscription={{ sub_filter }}{% endif %}" class="sitem {% if type_filter == t %}active{% endif %}">
+        {{ t }}
+      </a>
+      {% endfor %}
+    </div>
+
+    <div class="sdivider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Subscription</div>
+      <a href="/?subscription=hourly{% if search %}&search={{ search }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if type_filter %}&car_type={{ type_filter }}{% endif %}" class="sitem {% if sub_filter == 'hourly' %}active{% endif %}">
+        🟠 Hourly
+      </a>
+      <a href="/?subscription=daily{% if search %}&search={{ search }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if type_filter %}&car_type={{ type_filter }}{% endif %}" class="sitem {% if sub_filter == 'daily' %}active{% endif %}">
+        🟢 Daily
+      </a>
+      <a href="/?subscription=monthly{% if search %}&search={{ search }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if type_filter %}&car_type={{ type_filter }}{% endif %}" class="sitem {% if sub_filter == 'monthly' %}active{% endif %}">
+        🔵 Monthly
+      </a>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="metrics">
+      <div class="mcard">
+        <div class="mlabel">Total Spots</div>
+        <div class="mvalue">50</div>
+        <div class="msub">Garage capacity</div>
+      </div>
+      <div class="mcard green">
+        <div class="mlabel">Available</div>
+        <div class="mvalue green">{{ available_spots }}</div>
+        <div class="msub">Free spots now</div>
+      </div>
+      <div class="mcard red">
+        <div class="mlabel">Parked Now</div>
+        <div class="mvalue red">{{ parked_cars }}</div>
+        <div class="msub">Occupied spots</div>
+      </div>
+      <div class="mcard yellow">
+        <div class="mlabel">Total Revenue</div>
+        <div class="mvalue yellow">{{ total_revenue }}</div>
+        <div class="msub">Today: {{ today_revenue }} EGP</div>
+      </div>
+    </div>
+
+    {% if garage_full %}
+    <div class="full-alert">⚠️ Garage is full — no available spots right now.</div>
+    {% endif %}
+
+    <form method="GET" action="/">
+      {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+      {% if type_filter %}<input type="hidden" name="car_type" value="{{ type_filter }}">{% endif %}
+      {% if sub_filter %}<input type="hidden" name="subscription" value="{{ sub_filter }}">{% endif %}
+      <div class="toolbar">
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" name="search" class="search-input" placeholder="Search by owner or car number..." value="{{ search }}">
+        </div>
+        <button type="submit" class="filter-btn">Search</button>
+        <a href="/" class="clear-btn">✕ Clear</a>
+      </div>
+    </form>
+
+    <div class="tbar">
+      <div class="tbar-title">Cars <span>— {{ cars|length }} results</span></div>
+      {% if not garage_full %}
+      <a href="/add" class="add-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Car
+      </a>
+      {% else %}
+      <span class="add-btn-disabled">Garage Full</span>
+      {% endif %}
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Owner</th><th>Car Number</th><th>Type</th>
+            <th>Subscription</th><th>Entry</th><th>Exit</th>
+            <th>Status</th><th>Price</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for car in cars %}
+          <tr>
+            <td class="td-id">{{ car.id }}</td>
+            <td class="td-owner">{{ car.owner_name }}</td>
+            <td class="td-num">{{ car.car_number }}</td>
+            <td>{{ car.car_type or '—' }}</td>
+            <td><span class="badge badge-{{ car.subscription }}">{{ car.subscription }}</span></td>
+            <td class="td-muted">{{ car.entry_time.strftime('%m-%d %H:%M') }}</td>
+            <td class="td-muted">{{ car.exit_time.strftime('%H:%M') if car.exit_time else '—' }}</td>
+            <td>
+              {% if car.status == 'Parked' %}
+              <span class="badge badge-parked">Parked</span>
+              {% else %}
+              <span class="badge badge-exited">Exited</span>
+              {% endif %}
+            </td>
+            <td class="td-muted">{% if car.total_price > 0 %}{{ car.total_price }} EGP{% else %}—{% endif %}</td>
+            <td>
+              <div class="actions">
+                {% if car.status == 'Parked' %}
+                <form method="POST" action="/checkout/{{ car.id }}" style="display:inline">
+                  <button class="act act-checkout">Checkout</button>
+                </form>
+                {% endif %}
+                <a href="/edit/{{ car.id }}" class="act act-edit">Edit</a>
+                <form method="POST" action="/delete/{{ car.id }}" style="display:inline" onsubmit="return confirm('Delete this record?')">
+                  <button class="act act-delete">✕</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr class="empty-row"><td colspan="10">No cars found</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</body>
+</html>

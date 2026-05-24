@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Report — Smart Garage</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #080b0f; --surface: #0f1318; --surface2: #161c24; --surface3: #1d2530;
+      --border: #1e2a38; --border2: #263344; --text: #e2eaf4; --muted: #5a7a9a; --muted2: #3d5870;
+      --accent: #3b9eff; --accent-glow: rgba(59,158,255,0.12);
+      --success: #22c55e; --warning: #f59e0b; --purple: #a78bfa; --coral: #fb7185;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif; }
+
+    .topbar { display: flex; align-items: center; justify-content: space-between; padding: 0 28px; height: 56px; background: var(--surface); border-bottom: 1px solid var(--border); }
+    .brand { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 700; }
+    .brand-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .brand-icon svg { width: 16px; height: 16px; color: white; }
+    .brand-name span { color: var(--accent); }
+    .topbar-actions { display: flex; gap: 8px; }
+    .tbtn { display: flex; align-items: center; gap: 6px; padding: 6px 14px; font-size: 12px; font-weight: 500; font-family: 'Space Grotesk', sans-serif; border: 1px solid var(--border2); border-radius: 8px; background: var(--surface2); color: var(--muted); text-decoration: none; cursor: pointer; transition: all 0.15s; }
+    .tbtn:hover { color: var(--text); border-color: var(--accent); }
+    .tbtn.green { color: var(--success); border-color: rgba(34,197,94,0.3); }
+    .tbtn.green:hover { background: rgba(34,197,94,0.08); }
+
+    .main { max-width: 960px; margin: 0 auto; padding: 40px 28px 80px; }
+    .page-header { margin-bottom: 32px; }
+    .page-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    .page-sub { font-size: 13px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+
+    .section-label { font-size: 10px; font-weight: 600; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; }
+
+    .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 36px; }
+    .mcard { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; position: relative; overflow: hidden; }
+    .mcard::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--c, var(--accent)); }
+    .mcard.green { --c: var(--success); }
+    .mcard.yellow { --c: var(--warning); }
+    .mlabel { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px; }
+    .mvalue { font-size: 28px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+    .mvalue.blue { color: var(--accent); }
+    .mvalue.green { color: var(--success); }
+    .mvalue.yellow { color: var(--warning); }
+
+    .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+    .chart-card h6 { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 20px; }
+
+    .bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .bar-row:last-child { margin-bottom: 0; }
+    .bar-name { font-size: 13px; color: var(--text); min-width: 80px; font-weight: 500; }
+    .bar-track { flex: 1; background: var(--surface2); border-radius: 4px; height: 8px; overflow: hidden; border: 1px solid var(--border); }
+    .bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+    .bar-fill.blue { background: var(--accent); }
+    .bar-fill.green { background: var(--success); }
+    .bar-fill.yellow { background: var(--warning); }
+    .bar-fill.purple { background: var(--purple); }
+    .bar-fill.coral { background: var(--coral); }
+    .bar-count { font-size: 12px; font-family: 'JetBrains Mono', monospace; color: var(--muted); min-width: 28px; text-align: right; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      </div>
+      <span class="brand-name">Smart<span>Garage</span></span>
+    </div>
+    <div class="topbar-actions">
+      <a href="/export/csv" class="tbtn green">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export CSV
+      </a>
+      <a href="/" class="tbtn">← Dashboard</a>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="page-header">
+      <div class="page-title">Analytics Report</div>
+      <div class="page-sub">{{ now.strftime('%A, %B %d %Y — %H:%M') }}</div>
+    </div>
+
+    <div class="section-label">Overview</div>
+    <div class="metrics">
+      <div class="mcard">
+        <div class="mlabel">Today's Cars</div>
+        <div class="mvalue blue">{{ today_cars }}</div>
+      </div>
+      <div class="mcard yellow">
+        <div class="mlabel">Today's Revenue</div>
+        <div class="mvalue yellow">{{ today_revenue }} EGP</div>
+      </div>
+      <div class="mcard">
+        <div class="mlabel">All-Time Cars</div>
+        <div class="mvalue">{{ total_cars }}</div>
+      </div>
+      <div class="mcard green">
+        <div class="mlabel">All-Time Revenue</div>
+        <div class="mvalue green">{{ total_revenue }} EGP</div>
+      </div>
+    </div>
+
+    <div class="section-label">Breakdown</div>
+    <div class="charts">
+      <div class="chart-card">
+        <h6>Cars by Type</h6>
+        {% set colors = ['blue','green','yellow','purple','coral'] %}
+        {% set max_t = by_type | map(attribute=1) | max if by_type else 1 %}
+        {% for car_type, count in by_type %}
+        <div class="bar-row">
+          <span class="bar-name">{{ car_type or 'Unknown' }}</span>
+          <div class="bar-track">
+            <div class="bar-fill {{ colors[loop.index0 % colors|length] }}" style="width:{{ (count / max_t * 100)|int }}%"></div>
+          </div>
+          <span class="bar-count">{{ count }}</span>
+        </div>
+        {% else %}
+        <p style="color:var(--muted2);font-size:13px;text-align:center;padding:24px 0">No data yet</p>
+        {% endfor %}
+      </div>
+
+      <div class="chart-card">
+        <h6>Cars by Subscription</h6>
+        {% set sub_colors = {'hourly':'yellow','daily':'green','monthly':'blue'} %}
+        {% set max_s = by_sub | map(attribute=1) | max if by_sub else 1 %}
+        {% for sub, count in by_sub %}
+        <div class="bar-row">
+          <span class="bar-name">{{ sub | capitalize }}</span>
+          <div class="bar-track">
+            <div class="bar-fill {{ sub_colors.get(sub, 'blue') }}" style="width:{{ (count / max_s * 100)|int }}%"></div>
+          </div>
+          <span class="bar-count">{{ count }}</span>
+        </div>
+        {% else %}
+        <p style="color:var(--muted2);font-size:13px;text-align:center;padding:24px 0">No data yet</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Car — Smart Garage</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #080b0f; --surface: #0f1318; --surface2: #161c24; --surface3: #1d2530;
+      --border: #1e2a38; --border2: #263344; --text: #e2eaf4; --muted: #5a7a9a; --muted2: #3d5870;
+      --accent: #3b9eff; --accent-glow: rgba(59,158,255,0.12);
+      --success: #22c55e; --danger: #ef4444; --warning: #f59e0b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif; min-height: 100vh; }
+
+    .topbar { display: flex; align-items: center; justify-content: space-between; padding: 0 28px; height: 56px; background: var(--surface); border-bottom: 1px solid var(--border); }
+    .brand { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 700; }
+    .brand-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .brand-icon svg { width: 16px; height: 16px; color: white; }
+    .brand-name span { color: var(--accent); }
+    .back-btn { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: var(--muted); text-decoration: none; padding: 6px 14px; border: 1px solid var(--border2); border-radius: 8px; background: var(--surface2); transition: all 0.15s; }
+    .back-btn:hover { color: var(--text); border-color: var(--accent); }
+
+    .page { display: flex; align-items: flex-start; justify-content: center; padding: 52px 24px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 36px; width: 100%; max-width: 480px; }
+    .card-header { margin-bottom: 28px; }
+    .card-header h4 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .card-header p { font-size: 13px; color: var(--muted); }
+
+    .fgroup { margin-bottom: 20px; }
+    .flabel { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 7px; }
+    .finput, .fselect {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border2);
+      color: var(--text); border-radius: 8px; font-size: 13px; font-family: 'Space Grotesk', sans-serif;
+      padding: 10px 14px; transition: border-color 0.15s;
+    }
+    .finput::placeholder { color: var(--muted2); }
+    .finput:focus, .fselect:focus { outline: none; border-color: var(--accent); background: var(--surface3); }
+    .fselect option { background: var(--surface2); }
+
+    .sub-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .sub-radio { display: none; }
+    .sub-card {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      padding: 16px 10px; border: 1px solid var(--border2); border-radius: 10px;
+      cursor: pointer; transition: all 0.15s; text-align: center;
+    }
+    .sub-card:hover { border-color: var(--muted); background: var(--surface2); }
+    .sub-radio:checked + .sub-card { border-color: var(--accent); background: var(--accent-glow); }
+    .sub-icon { font-size: 22px; }
+    .sub-name { font-size: 12px; font-weight: 600; color: var(--text); }
+    .sub-price { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+    .sub-radio:checked + .sub-card .sub-price { color: var(--accent); }
+
+    .submit-btn {
+      width: 100%; background: var(--accent); color: white; border: none;
+      padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 700;
+      cursor: pointer; font-family: 'Space Grotesk', sans-serif; margin-top: 10px;
+      transition: opacity 0.15s; letter-spacing: 0.02em;
+    }
+    .submit-btn:hover { opacity: 0.88; }
+
+    .alert-full {
+      background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25);
+      border-radius: 10px; padding: 14px 18px; font-size: 13px; color: var(--danger); text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      </div>
+      <span class="brand-name">Smart<span>Garage</span></span>
+    </div>
+    <a href="/" class="back-btn">← Back to Dashboard</a>
+  </div>
+
+  <div class="page">
+    <div class="card">
+      <div class="card-header">
+        <h4>Add New Car</h4>
+        <p>Register a vehicle and choose its parking plan.</p>
+      </div>
+
+      {% if garage_full %}
+      <div class="alert-full">⚠️ Garage is full — cannot add new cars right now.</div>
+      {% else %}
+      <form method="POST">
+        <div class="fgroup">
+          <label class="flabel">Owner Name</label>
+          <input type="text" name="owner_name" class="finput" placeholder="e.g. Ahmed Mohamed" required>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Car Number</label>
+          <input type="text" name="car_number" class="finput" placeholder="e.g. ABC-1234" required>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Car Type</label>
+          <select name="car_type" class="fselect" required>
+            <option value="">Select type...</option>
+            {% for t in car_types %}
+            <option value="{{ t }}">{{ t }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Subscription Plan</label>
+          <div class="sub-grid">
+            <div>
+              <input type="radio" name="subscription" id="sub_hourly" value="hourly" class="sub-radio" checked>
+              <label for="sub_hourly" class="sub-card">
+                <span class="sub-icon">⏱</span>
+                <span class="sub-name">Hourly</span>
+                <span class="sub-price">10 EGP/hr</span>
+              </label>
+            </div>
+            <div>
+              <input type="radio" name="subscription" id="sub_daily" value="daily" class="sub-radio">
+              <label for="sub_daily" class="sub-card">
+                <span class="sub-icon">📅</span>
+                <span class="sub-name">Daily</span>
+                <span class="sub-price">{{ subscription_prices.daily }} EGP</span>
+              </label>
+            </div>
+            <div>
+              <input type="radio" name="subscription" id="sub_monthly" value="monthly" class="sub-radio">
+              <label for="sub_monthly" class="sub-card">
+                <span class="sub-icon">🗓</span>
+                <span class="sub-name">Monthly</span>
+                <span class="sub-price">{{ subscription_prices.monthly }} EGP</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="submit-btn">Add Car →</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>
