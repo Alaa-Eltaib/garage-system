@@ -52,11 +52,11 @@ def index():
             )
         )
     if status_filter:
-        query = query.filter_by(status=status_filter)
+        query = query.filter(Car.status == status_filter)
     if type_filter:
-        query = query.filter_by(car_type=type_filter)
+        query = query.filter(Car.car_type == type_filter)
     if sub_filter:
-        query = query.filter_by(subscription=sub_filter)
+        query = query.filter(Car.subscription == sub_filter)
 
     cars = query.order_by(Car.id.desc()).all()
     parked_cars = Car.query.filter_by(status='Parked').count()
